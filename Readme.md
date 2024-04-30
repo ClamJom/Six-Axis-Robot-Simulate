@@ -26,7 +26,7 @@ $$
 
 ## FK（正向运动学）
 
-设机械臂原点为$^0P$， i-1 轴到 i 轴的转换矩阵为$_i^{i-1}H$，末端位姿为$^EP$，机械臂共有 n 个轴。因此有：
+设机械臂原点为 $^0P$ ， i-1 轴到 i 轴的转换矩阵为 $_i^{i-1}H$ ，末端位姿为 $^EP$ ，机械臂共有 n 个轴。因此有：
 
 $$
 ^EP = _{n-1}^nH..._1^2H_0^1H^0P
@@ -77,16 +77,16 @@ $$
 
 ### 首先确定目标点的位置与姿态。
 
-通过三个关键点就能够生成相应的变换矩阵$_0^AH$，改变换等同于工具最终的姿态$_0^TH$，步骤如下：
-设目标点为$A(X_A,Y_A,Z_A)^T$，存在另外两个点$B(X_B,Y_B,Z_B)^T$、$C(X_C,Y_C,Z_C)^T$，得到:
+通过三个关键点就能够生成相应的变换矩阵 $_0^AH$ ，改变换等同于工具最终的姿态 $_0^TH$ ，步骤如下：
+设目标点为 $A(X_A,Y_A,Z_A)^T$ ，存在另外两个点 $B(X_B,Y_B,Z_B)^T$ 、 $C(X_C,Y_C,Z_C)^T$ ，得到:
 
 $$
-\overrightarrow{AB} = B - A \\\\\\
-\overrightarrow{AC} = C - A \\\\\\
-\overrightarrow{Z'_A} = \overrightarrow{AB}\times\overrightarrow{AC} \\\\\\
-\overrightarrow{Z_A} = Normalize(\overrightarrow{Z'_A}) \\\\\\
-\overrightarrow{X_A} = Normalize(\overrightarrow{AB}) \\\\\\
-\overrightarrow{Y_A} = Normalize(\overrightarrow{Z_A}\times\overrightarrow{X_A}) \\\\\\
+\overrightarrow{AB} = B - A,
+\overrightarrow{AC} = C - A,
+\overrightarrow{Z'_A} = \overrightarrow{AB}\times\overrightarrow{AC},
+\overrightarrow{Z_A} = Normalize(\overrightarrow{Z'_A}),
+\overrightarrow{X_A} = Normalize(\overrightarrow{AB}),
+\overrightarrow{Y_A} = Normalize(\overrightarrow{Z_A}\times\overrightarrow{X_A}),
 _0^TH = _0^AH = \left[\begin{matrix}
 			\overrightarrow{X_A}&\overrightarrow{Y_A}&\overrightarrow{Z_A}&A \\ 
 			0&0&0&1 \\ 
@@ -97,13 +97,13 @@ $$
 
 ### 获取前三轴的姿态
 
-得到目标点的位置与姿态后，使用工具与轴6的逆变换得到轴4、5、6的坐标系原点$^4P$，即：
+得到目标点的位置与姿态后，使用工具与轴6的逆变换得到轴4、5、6的坐标系原点 $^4P$ ，即：
 
 $$
 ^4P = _0^TH _6^TH^{-1} {}^0P
 $$
 
-得到$^4P$后，可以通过$^4P$与$^0P$得到$\theta_1$，具体如下:
+得到 $^4P$ 后，可以通过 $^4P$ 与 $^0P$ 得到 $\theta_1$ ，具体如下:
 由于轴2、3、4共面，且平面距离 $^0P$ 为 $d_1$ ，我们记 $^4P$ 在轴1 X-Y 坐标系平面上与 $^0P$ 的距离为 $d_{14}$ ，且 $^4P$ 在轴1 X-Y平面上的投影为  $^4P'$ 。
 
 想象在轴1 X-Y平面上存在一个以 $^0P$ 为圆心，半径为 $d_1$ 的圆，那么有过 $^4P'$ 的切线 $L_{^4P'}$（显然有两条，根据实际情况取其一），该切线与 $^0P$ 距离为 $d_1$ 且与轴2、3、4坐标系原点组成的平面共面。设 $^4P'$ 与 $^0P$ 的连线与所在平面坐标系X轴的夹角为 $\theta_{04}$ ，$^0P$ 与 $L_{^4P'}$ 的切点的连线与 $^4P'$ 与 $^0P$ 的连线形成的夹角为 $\alpha_{04}$，则有：
@@ -116,7 +116,7 @@ $$
 \theta_1 = \alpha_{04} + \theta_{04} - \frac{\pi}{2}
 $$
 
-得到$\theta_1$。更新轴1对应的变换矩阵$_0^1H'$，得到轴2的坐标系原点：
+得到 $\theta_1$ 。更新轴1对应的变换矩阵 $_0^1H'$ ，得到轴2的坐标系原点：
 
 $$
 P = _1^2H_0^1H'^0P
@@ -137,8 +137,8 @@ $$
 \theta_{offset3} = \arccos{\frac{d^2_4 + l^2_{34} - a^2_4}{2d_4l_{34}}}\\\theta_3 = \arccos{\frac{l^2_{23} + l^2_{34} -d^2_{24}}{2l_{23}l_{34}}} + \theta_{offset3} - \frac{\pi}{2}
 $$
 
-为什么出现了一个$\theta_{offset3}$？我们观察式子，发现 $l_{34} = \sqrt{d^2_4 + a^2_4}$，这是因为在轴2、3、4所在的平面内，轴3与轴4的投影的连线并不是 $a_4$ ，一个直角三角形，斜边为 $\sqrt{d^2_4 + a^2_4}$ ，邻边为$d_4$，对边为$a_4$ ，而这个三角形在轴3处的顶角角度为 $\theta_{offset3}$ ，这个角度是不变的，由于初始时 $\theta_3$ 为0，而实际上轴4原点与轴3原点的连线与轴2的夹角为 $\theta_{\angle234} = (\theta_{3})_0 + \frac{\pi}{2} - \theta_{offset3} = \pi - \theta_{offset3}$ ，而根据实际的几何关系，$\theta_{\angle234} = \theta_3 + \frac{\pi}{2} - \theta_{offset3}$，从而得到：$\theta_3 = \theta_{\angle234} + \theta_{offset3} - \frac{\pi}{2}$。
-同理，$\theta_2$ 的计算过程如下：
+为什么出现了一个 $\theta_{offset3}$ ？我们观察式子，发现 $l_{34} = \sqrt{d^2_4 + a^2_4}$ ，这是因为在轴2、3、4所在的平面内，轴3与轴4的投影的连线并不是 $a_4$ ，一个直角三角形，斜边为 $\sqrt{d^2_4 + a^2_4}$ ，邻边为 $d_4$ ，对边为 $a_4$ ，而这个三角形在轴3处的顶角角度为 $\theta_{offset3}$ ，这个角度是不变的，由于初始时 $\theta_3$ 为0，而实际上轴4原点与轴3原点的连线与轴2的夹角为 $\theta_{\angle234} = (\theta_{3})_0 + \frac{\pi}{2} - \theta_{offset3} = \pi - \theta_{offset3}$ ，而根据实际的几何关系，$\theta_{\angle234} = \theta_3 + \frac{\pi}{2} - \theta_{offset3}$ ，从而得到： $\theta_3 = \theta_{\angle234} + \theta_{offset3} - \frac{\pi}{2}$ 。
+同理， $\theta_2$ 的计算过程如下：
 令：
 
 $$
@@ -158,29 +158,29 @@ $$
 
 ### 获取后三轴的姿态
 
-通过前三轴我们可以得到轴4的初始姿态$_0^4H$，即：
+通过前三轴我们可以得到轴4的初始姿态 $_0^4H$ ，即：
 
 $$
 _0^4H = _3^4H_2^3{H'}_1^2{H'}_0^1{H'}
 $$
 
-注意，此时 $_3^4H$ 还未更新。得到轴4的姿态后，通过 $_0^4H$ 的第三列与第二列即可获取当前坐标系下的Z基底 $\overrightarrow{Z_{temp4}}$ 与Y基底 $\overrightarrow{Y_{temp4}}$。通过 $\overrightarrow{Z_{temp4}}$ 与 $\overrightarrow{Z_A}$ 以及 $\overrightarrow{Y_{temp4}}$ 我们可以得到 $\theta_4$。过程如下:
+注意，此时 $_3^4H$ 还未更新。得到轴4的姿态后，通过 $_0^4H$ 的第三列与第二列即可获取当前坐标系下的Z基底 $\overrightarrow{Z_{temp4}}$ 与Y基底 $\overrightarrow{Y_{temp4}}$ 。通过 $\overrightarrow{Z_{temp4}}$ 与 $\overrightarrow{Z_A}$ 以及 $\overrightarrow{Y_{temp4}}$ 我们可以得到 $\theta_4$ 。过程如下:
 
 $$
 \overrightarrow{Y_{46}} = \overrightarrow{Z_{temp4}}\times\overrightarrow{Z_A} \\ 
 \hat{\theta_{4}} = \arccos{\frac{\overrightarrow{Y_{46}}\bullet\overrightarrow{Y_{temp_4}}}{||\overrightarrow{Y_{46}}||||\overrightarrow{Y_{temp4}}||}}
 $$
 
-通过$\hat{\theta_{4}}$得到临时变量$\hat{^4_0H}$，通过临时变换所得到的坐标系X轴与$\overrightarrow{Y_{46}}$是否正交得到$\theta_{4}$的符号。当前二者正交时，角度为正，$\theta_4 = \hat{\theta_4}$，否则$\theta_4 = -\hat{\theta_4}$。
+通过 $\hat{\theta_{4}}$ 得到临时变量 $\hat{^4_0H}$ ，通过临时变换所得到的坐标系X轴与 $\overrightarrow{Y_{46}}$ 是否正交得到 $\theta_{4}$ 的符号。当前二者正交时，角度为正， $\theta_4 = \hat{\theta_4}$ ，否则 $\theta_4 = -\hat{\theta_4}$ 。
 
 同理，我们可以获取轴5的角度。过程如下：
-首先得到轴5当前的变换矩阵，通过其第二列获取其Y基底 $\overrightarrow{Y_{temp5}}$
+首先得到轴5当前的变换矩阵，通过其第二列获取其Y基底 $\overrightarrow{Y_{temp5}}$ 
 
 $$
 _0^5H = _4^5H_3^4{H'}_2^3{H'}_1^2{H'}_0^1{H'}
 $$
 
-上述式子中使用了更新后的变换 $_3^4{H'}$，实际上，不使用更新后的变换不影响计算 $\theta_5$。这是因为Z轴为旋转轴，而计算 $\theta_5$ 时考虑的是轴4的Z轴与轴6的Z轴（亦是目标点的Z轴$\overrightarrow{Z_A}$）。
+上述式子中使用了更新后的变换 $_3^4{H'}$ ，实际上，不使用更新后的变换不影响计算 $\theta_5$ 。这是因为Z轴为旋转轴，而计算 $\theta_5$ 时考虑的是轴4的Z轴与轴6的Z轴（亦是目标点的Z轴 $\overrightarrow{Z_A}$ ）。
 
 随后有:
 
@@ -190,7 +190,7 @@ $$
 
 由于 $\theta_4$ 已经限制了轴5在 $[0,\pi]$ 之间便可以指向目标，因此不需要再判别象限。之所以使用轴5的-Y轴是更具当前使用的机械臂DH参数决定的，在当前参数下，轴5的Y轴正方向为目标Z轴的负方向。
 
-最后计算 $\theta_6$，过程与前二者类似。首先得到轴6当前的变换矩阵，通过其第一列获取其X基底 $\overrightarrow{X_{temp6}}$。
+最后计算 $\theta_6$ ，过程与前二者类似。首先得到轴6当前的变换矩阵，通过其第一列获取其X基底 $\overrightarrow{X_{temp6}}$ 。
 
 $$
 _0^6H = _5^6H_4^5{H'}_3^4{H'}_2^3{H'}_1^2{H'}_0^1{H'}
@@ -202,7 +202,7 @@ $$
 \hat{\theta_{6}} = \arccos{\frac{\overrightarrow{X_A}\bullet\overrightarrow{X_{temp6}}}{||\overrightarrow{X_A}||||\overrightarrow{X_{temp6}}||}}\\
 $$
 
-和轴4一样，轴6也需要在得到$\hat{\theta_6}$后得到临时变换$\hat{^6_0H}$，并通过临时变换的到的坐标系X轴与目标坐标系Y轴内积判断是否内积来得到$\theta_6$的正负性。当前二者正交时，$\theta_6 = \hat{\theta_6}$，否则$\theta_6 = -\hat{\theta_6}$。
+和轴4一样，轴6也需要在得到 $\hat{\theta_6}$ 后得到临时变换 $\hat{^6_0H}$ ，并通过临时变换的到的坐标系X轴与目标坐标系Y轴内积判断是否内积来得到 $\theta_6$ 的正负性。当前二者正交时， $\theta_6 = \hat{\theta_6}$ ，否则 $\theta_6 = -\hat{\theta_6}$ 。
 
 至此，后三轴的角度也计算完成。
 
