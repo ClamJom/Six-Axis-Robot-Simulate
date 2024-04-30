@@ -1,4 +1,4 @@
-# DH参数与机械臂运动学
+# 本项目是本人学习过程中自己根据理解写得的，不一定正确。请自加判断后查看。
 
 ## DH参数->转换矩阵
 
@@ -106,13 +106,11 @@ $$
 得到 $^4P$ 后，可以通过 $^4P$ 与 $^0P$ 得到 $\theta_1$ ，具体如下:
 由于轴2、3、4共面，且平面距离 $^0P$ 为 $d_1$ ，我们记 $^4P$ 在轴1 X-Y 坐标系平面上与 $^0P$ 的距离为 $d_{14}$ ，且 $^4P$ 在轴1 X-Y平面上的投影为  $^4P'$ 。
 
-想象在轴1 X-Y平面上存在一个以 $^0P$ 为圆心，半径为 $d_1$ 的圆，那么有过 $^4P'$ 的切线 $L_{^4P'}$（显然有两条，根据实际情况取其一），该切线与 $^0P$ 距离为 $d_1$ 且与轴2、3、4坐标系原点组成的平面共面。设 $^4P'$ 与 $^0P$ 的连线与所在平面坐标系X轴的夹角为 $\theta_{04}$ ，$^0P$ 与 $L_{^4P'}$ 的切点的连线与 $^4P'$ 与 $^0P$ 的连线形成的夹角为 $\alpha_{04}$，则有：
+想象在轴1 X-Y平面上存在一个以 $^0P$ 为圆心，半径为 $d_1$ 的圆，那么有过 $^4P'$ 的切线 $L_{^4P'}$（显然有两条，根据实际情况取其一），该切线与 $^0P$ 距离为 $d_1$ 且与轴2、3、4坐标系原点组成的平面共面。设 $^4P'$ 与 $^0P$ 的连线与所在平面坐标系X轴的夹角为 $\theta_{04}$ ， $^0P$ 与 $L_{^4P'}$ 的切点的连线与 $^4P'$ 与 $^0P$ 的连线形成的夹角为 $\alpha_{04}$ ，则有：
 
 $$
-\alpha_{04} = \arccos\frac{d_{14}}{\sqrt{(X_{^4P'} - X_{^0P})^2 +(Y_{^4P'} - Y_{^0P})^2 }}\\
-
-\theta_{04} = \arctan2(Y_{^4P'},X_{^4P'})\\
-
+\alpha_{04} = \arccos\frac{d_{14}}{\sqrt{(X_{^4P'} - X_{^0P})^2 +(Y_{^4P'} - Y_{^0P})^2 }},
+\theta_{04} = \arctan2(Y_{^4P'},X_{^4P'}),
 \theta_1 = \alpha_{04} + \theta_{04} - \frac{\pi}{2}
 $$
 
@@ -128,13 +126,14 @@ $$
 令:
 
 $$
-d_{24} = ||^4P - ^2P||，\overrightarrow{^2P^4P} = ^4P - ^2P，l_{23} = a_3，l_{34} = \sqrt{d^2_4 + a^2_4}\\
+d_{24} = ||^4P - ^2P||，\overrightarrow{^2P^4P} = ^4P - ^2P，l_{23} = a_3，l_{34} = \sqrt{d^2_4 + a^2_4}
 $$
 
 则有：
 
 $$
-\theta_{offset3} = \arccos{\frac{d^2_4 + l^2_{34} - a^2_4}{2d_4l_{34}}}\\\theta_3 = \arccos{\frac{l^2_{23} + l^2_{34} -d^2_{24}}{2l_{23}l_{34}}} + \theta_{offset3} - \frac{\pi}{2}
+\theta_{offset3} = \arccos{\frac{d^2_4 + l^2_{34} - a^2_4}{2d_4l_{34}}},
+\theta_3 = \arccos{\frac{l^2_{23} + l^2_{34} -d^2_{24}}{2l_{23}l_{34}}} + \theta_{offset3} - \frac{\pi}{2}
 $$
 
 为什么出现了一个 $\theta_{offset3}$ ？我们观察式子，发现 $l_{34} = \sqrt{d^2_4 + a^2_4}$ ，这是因为在轴2、3、4所在的平面内，轴3与轴4的投影的连线并不是 $a_4$ ，一个直角三角形，斜边为 $\sqrt{d^2_4 + a^2_4}$ ，邻边为 $d_4$ ，对边为 $a_4$ ，而这个三角形在轴3处的顶角角度为 $\theta_{offset3}$ ，这个角度是不变的，由于初始时 $\theta_3$ 为0，而实际上轴4原点与轴3原点的连线与轴2的夹角为 $\theta_{\angle234} = (\theta_{3})_0 + \frac{\pi}{2} - \theta_{offset3} = \pi - \theta_{offset3}$ ，而根据实际的几何关系，$\theta_{\angle234} = \theta_3 + \frac{\pi}{2} - \theta_{offset3}$ ，从而得到： $\theta_3 = \theta_{\angle234} + \theta_{offset3} - \frac{\pi}{2}$ 。
@@ -142,15 +141,15 @@ $$
 令：
 
 $$
-l_{h24} = \sqrt{(X_{^4P} - X_{^2P})^2 + (Y_{^4P} - Y_{^2P})^2}\\
-l_{v24} = Z_{^4P} - Z_{^2P}\\
+l_{h24} = \sqrt{(X_{^4P} - X_{^2P})^2 + (Y_{^4P} - Y_{^2P})^2},
+l_{v24} = Z_{^4P} - Z_{^2P}
 $$
 
 故有：
 
 $$
-\alpha_{\angle423} = \arccos{\frac{l^2_{23} + d^2_{24} -l^2_{34}}{2l_{23}d_{24}}}\\
-\theta_{24} = \arctan2(l_{h24},l_{v24})\\
+\alpha_{\angle423} = \arccos{\frac{l^2_{23} + d^2_{24} -l^2_{34}}{2l_{23}d_{24}}},
+\theta_{24} = \arctan2(l_{h24},l_{v24}),
 \theta_2 = \alpha_{\angle423} + \theta_{24}
 $$
 
@@ -164,10 +163,10 @@ $$
 _0^4H = _3^4H_2^3{H'}_1^2{H'}_0^1{H'}
 $$
 
-注意，此时 $_3^4H$ 还未更新。得到轴4的姿态后，通过 $_0^4H$ 的第三列与第二列即可获取当前坐标系下的Z基底 $\overrightarrow{Z_{temp4}}$ 与Y基底 $\overrightarrow{Y_{temp4}}$ 。通过 $\overrightarrow{Z_{temp4}}$ 与 $\overrightarrow{Z_A}$ 以及 $\overrightarrow{Y_{temp4}}$ 我们可以得到 $\theta_4$ 。过程如下:
+注意，此时 $^4_3H$ 还未更新。得到轴4的姿态后，通过 $^4_0H$ 的第三列与第二列即可获取当前坐标系下的Z基底 $\overrightarrow{Z_{temp4}}$ 与Y基底 $\overrightarrow{Y_{temp4}}$ 。通过 $\overrightarrow{Z_{temp4}}$ 与 $\overrightarrow{Z_A}$ 以及 $\overrightarrow{Y_{temp4}}$ 我们可以得到 $\theta_4$ 。过程如下:
 
 $$
-\overrightarrow{Y_{46}} = \overrightarrow{Z_{temp4}}\times\overrightarrow{Z_A} \\ 
+\overrightarrow{Y_{46}} = \overrightarrow{Z_{temp4}}\times\overrightarrow{Z_A},
 \hat{\theta_{4}} = \arccos{\frac{\overrightarrow{Y_{46}}\bullet\overrightarrow{Y_{temp_4}}}{||\overrightarrow{Y_{46}}||||\overrightarrow{Y_{temp4}}||}}
 $$
 
