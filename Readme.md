@@ -12,12 +12,15 @@ R =\left[\begin{matrix}
 	\cos{\theta}&-\sin{\theta} &0\\
 	\cos{\alpha}\sin{\theta} & \cos{\alpha}\cos{\theta} & -\sin{\alpha}\\
 	\sin{\alpha}\sin{\theta}&\sin{\alpha}\cos{\theta}&\cos{\alpha}\\
-\end{matrix}\right]\\
-T = \left[\begin{matrix} a & -d\sin{\alpha} & d\cos{\alpha} \end{matrix}\right]^T\\
- H = \left[\begin{matrix}
+\end{matrix}\right],
+
+T = \left[\begin{matrix} a & -d\sin{\alpha} & d\cos{\alpha} \end{matrix}\right]^T,
+
+H = \left[\begin{matrix}
 	R & T\\
 	0 & 1
-\end{matrix}\right]\\
+\end{matrix}\right],
+
 H^{-1} = \left[\begin{matrix}
 	R^T & -R^TT\\
 	0&1
