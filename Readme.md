@@ -81,15 +81,15 @@ $$
 设目标点为$A(X_A,Y_A,Z_A)^T$，存在另外两个点$B(X_B,Y_B,Z_B)^T$、$C(X_C,Y_C,Z_C)^T$，得到:
 
 $$
-\overrightarrow{AB} = B - A\\
-\overrightarrow{AC} = C - A\\
-\overrightarrow{Z'_A} = \overrightarrow{AB}\times\overrightarrow{AC}\\
-\overrightarrow{Z_A} = Normalize(\overrightarrow{Z'_A})\\
-\overrightarrow{X_A} = Normalize(\overrightarrow{AB})\\
-\overrightarrow{Y_A} = Normalize(\overrightarrow{Z_A}\times\overrightarrow{X_A})\\
+\overrightarrow{AB} = B - A \\ 
+\overrightarrow{AC} = C - A \\ 
+\overrightarrow{Z'_A} = \overrightarrow{AB}\times\overrightarrow{AC} \\ 
+\overrightarrow{Z_A} = Normalize(\overrightarrow{Z'_A}) \\ 
+\overrightarrow{X_A} = Normalize(\overrightarrow{AB}) \\ 
+\overrightarrow{Y_A} = Normalize(\overrightarrow{Z_A}\times\overrightarrow{X_A})\\ 
 _0^TH = _0^AH = \left[\begin{matrix}
-			\overrightarrow{X_A}&\overrightarrow{Y_A}&\overrightarrow{Z_A}&A\\
-			0&0&0&1\\
+			\overrightarrow{X_A}&\overrightarrow{Y_A}&\overrightarrow{Z_A}&A \\ 
+			0&0&0&1 \\ 
 			\end{matrix}\right]
 $$
 
