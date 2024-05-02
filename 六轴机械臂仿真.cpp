@@ -140,8 +140,13 @@ int main()
 	Robot robot(links, Eigen::Vector3f(0, 0, 0));
 	robot.tool = Joint(0, 0, 119, 0);
 
+	robot.setTrackSize(20);
+
 	boost::shared_ptr<pcl::visualization::PCLVisualizer> viewer(new pcl::visualization::PCLVisualizer);
 	viewer->addCoordinateSystem(50);
+
+	robot.drawRobotLine(viewer,false);
+
 	//生成测试点云并变换姿态
 	pcl::PointCloud<pcl::PointXYZ>::Ptr cloud = initTestPointCloud();
 	pcl::PointCloud<pcl::PointXYZ>::Ptr transedCloud(new pcl::PointCloud<pcl::PointXYZ>);

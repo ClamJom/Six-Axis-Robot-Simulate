@@ -24,6 +24,8 @@ private:
 	float reachSpaceMaxLength = 0;
 	float reachSpaceMinLength = 0;
 	int drawedTimes = 0;		//记录机械臂在视图中被绘制的次数，且防止ID冲突
+	int trackSize = 100;		//轨迹记录点数量
+	pcl::PointCloud<pcl::PointXYZ> track;	//轨迹点
 public:
 	Robot(std::vector<Joint> joints, Eigen::Vector3f BasePosition) {
 		this->JointCount = joints.size();
@@ -34,13 +36,21 @@ public:
 		}
 		reachSpaceMinLength = sqrt(pow(joints[0].a, 2) + pow(joints[0].d, 2)) +
 			sqrt(pow(joints[1].a, 2) + pow(joints[1].d, 2)) - sqrt(pow(joints[2].a, 2) + pow(joints[2].d, 2));
+		track.resize(trackSize);
 	}
 
 public:
+	//获取轨迹记录点数量
+	int getTrackSize() { return trackSize; }
+	/// <summary>
+	/// 重新设置轨迹记录点数量
+	/// </summary>
+	/// <param name="size"></param>
+	void setTrackSize(int size) { trackSize = size; track.resize(size); }
 	/// <summary>
 	/// 画机械臂示意线
 	/// </summary>
-	void drawRobotLine(boost::shared_ptr<pcl::visualization::PCLVisualizer> viewer) {
+	void drawRobotLine(boost::shared_ptr<pcl::visualization::PCLVisualizer> viewer, bool showTrack = true) {
 		drawedTimes++;
 		pcl::PointXYZ p1(BasePosition(0), BasePosition(1), BasePosition(2));
 		pcl::PointXYZ p2;
@@ -48,31 +58,35 @@ public:
 		MyColor::CHSV hsv(0, 100, 100);
 		Eigen::Matrix4f tempH = Eigen::Matrix4f::Identity();
 		Eigen::Vector4f tempP;
+		std::string CurrentID = "T" + std::to_string(drawedTimes);
 		for (int i = 0; i < JointCount; i++) {
 			hsv.h = i * 360 / JointCount;
 			MyColor::hsv2rgb(hsv, rgb);
 			tempH *= joints[i].H;
 			tempP = tempH * BasePosition;
 			p2.x = tempP(0), p2.y = tempP(1), p2.z = tempP(2);
-			viewer->addLine(p1, p2, rgb.r / 255, rgb.g / 255, rgb.b / 255, "T" + std::to_string(drawedTimes) + "A" + std::to_string(i));
-			viewer->addSphere(p2, 10, "T" + std::to_string(drawedTimes) + "J" + std::to_string(i));
+			viewer->addLine(p1, p2, rgb.r / 255, rgb.g / 255, rgb.b / 255, CurrentID + "A" + std::to_string(i));
+			viewer->addSphere(p2, 10, CurrentID + "J" + std::to_string(i));
 			/*if (i < 2) {
-				drawCoordinateAtPointWithH(viewer, p2, tempH, "T" + std::to_string(drawedTimes) + "A" + std::to_string(i) + "C", 20.F);
+				drawCoordinateAtPointWithH(viewer, p2, tempH, CurrentID + "A" + std::to_string(i) + "C", 20.F);
 			}*/
 			if (i == 3) {
-				drawCoordinateAtPointWithH(viewer, p2, tempH, "T" + std::to_string(drawedTimes) + "A" + std::to_string(i) + "C", 20.F);
+				drawCoordinateAtPointWithH(viewer, p2, tempH, CurrentID + "A" + std::to_string(i) + "C", 20.F);
 			}
 			if (i == 4) {
-				drawCoordinateAtPointWithH(viewer, p2, tempH, "T" + std::to_string(drawedTimes) + "A" + std::to_string(i) + "C", 40.F);
+				drawCoordinateAtPointWithH(viewer, p2, tempH, CurrentID + "A" + std::to_string(i) + "C", 40.F);
 			}
 			p1 = p2;
 		}
 		tempH *= tool.H;
 		tempP = tempH * BasePosition;
 		p2.x = tempP(0), p2.y = tempP(1), p2.z = tempP(2);
-		viewer->addLine(p1, p2, 1, 1, 1, "T" + std::to_string(drawedTimes) + "TA");
-		viewer->addSphere(p2, 5, "T" + std::to_string(drawedTimes) + "TE");
-		drawCoordinateAtPointWithH(viewer, p2, tempH, "T" + std::to_string(drawedTimes) + "TC");
+		viewer->addLine(p1, p2, 1, 1, 1, CurrentID + "TA");
+		viewer->addSphere(p2, 5, CurrentID + "TE");
+		drawCoordinateAtPointWithH(viewer, p2, tempH, CurrentID + "TC");
+		if (showTrack) {
+			drawTrack(viewer, MyColor::CRGB(0, 255, 0), CurrentID + "Track");
+		}
 	}
 
 	//从给定的三个点中获取姿态信息
@@ -106,10 +120,22 @@ public:
 		return tempH * BasePosition;
 	}
 
+	Eigen::Matrix4f FK(Eigen::Vector<float, 6> pose) {
+		if (joints.size() == 0) {
+			throw "Empty Joint List!!!";
+		}
+		Eigen::Matrix4f tempH = Eigen::Matrix4f::Identity();
+		for (int i = 0; i < JointCount; i++) {
+			tempH *= joints[i].getHFromTheta(pose(i));
+		}
+		tempH *= tool.H;
+		return tempH;
+	}
+
 	/// <summary>
 	/// 逆向运动学
 	/// </summary>
-	void IK(Eigen::Matrix4f aimPose) {
+	void IK(Eigen::Matrix4f aimPose, bool recordTrack = true) {
 		if (joints.size() == 0) {
 			throw "Empty Joint List!!!";
 		}
@@ -126,6 +152,9 @@ public:
 			Eigen::Vector3f backPose = calculatePoseTheta(aimPose, fontPose);
 			pose << fontPose(0), fontPose(1), fontPose(2), backPose(0), backPose(1), backPose(2);
 		}
+		if (recordTrack) {
+			getTrack(pose);
+		}
 		for (int i = 0; i < JointCount; i++) {
 			joints[i].updateH(pose(i));
 		}
@@ -139,6 +168,40 @@ private:
 		viewer->addLine(p, X, 1, 0, 0, id + "X");
 		viewer->addLine(p, Y, 0, 1, 0, id + "Y");
 		viewer->addLine(p, Z, 0, 0, 1, id + "Z");
+	}
+
+	/// <summary>
+	/// 获取机械臂末端运动轨迹信息
+	/// </summary>
+	///  <param name="newPose">新的角度</param>
+	void getTrack(Eigen::Vector<float, 6> newPose) {
+		if (newPose.size() < this->JointCount) {
+			throw "Incorrect Pose Size";
+		}
+		Eigen::Vector<float, 6> dtheta;
+		Eigen::Vector<float, 6> currentTheta;
+		dtheta << 0, 0, 0, 0, 0, 0;
+		for (int i = 0; i < 6; i++) {
+			currentTheta(i) = this->joints[i].theta;
+			dtheta(i) = (newPose(i) - this->joints[i].theta) / trackSize;
+		}
+		Eigen::Matrix4f tempH;
+		Eigen::Vector4f tempP;
+		tempH = FK(currentTheta);
+		tempP = tempH * this->BasePosition;
+		track.points[0] = pcl::PointXYZ(tempP(0), tempP(1), tempP(2));
+		for (int i = 0; i < trackSize; i++) {
+			currentTheta += dtheta;
+			tempH = FK(currentTheta);
+			tempP = tempH * this->BasePosition;
+			track.points[i] = pcl::PointXYZ(tempP(0), tempP(1), tempP(2));
+		}
+	}
+
+	void drawTrack(boost::shared_ptr<pcl::visualization::PCLVisualizer> viewer, MyColor::CRGB color, std::string id = "Track") {
+		for (int i = 1; i < track.size(); i++) {
+			viewer->addLine(track.points[i - 1], track.points[i], color.r / 255, color.g / 255, color.b / 255, id + std::to_string(i));
+		}
 	}
 
 	//通过轴4原点位置计算前三轴的姿态
