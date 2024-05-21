@@ -134,7 +134,7 @@ $$
 
 $$
 \theta_{offset3} = \arccos{\frac{d^2_4 + l^2_{34} - a^2_4}{2d_4l_{34}}},
-\theta_3 = \arccos{\frac{l^2_{23} + l^2_{34} -d^2_{24}}{2l_{23}l_{34}}} + \theta_{offset3} - \frac{\pi}{2}
+\theta_3 = \arccos{\frac{l^2_{23} + l^2_{34} -d^2_{24}}{2l_{23}l_{34}}} - \theta_{offset3} - \frac{\pi}{2}
 $$
 
 为什么出现了一个 $\theta_{offset3}$ ？我们观察式子，发现 $l_{34} = \sqrt{d^2_4 + a^2_4}$ ，这是因为在轴2、3、4所在的平面内，轴3与轴4的投影的连线并不是 $a_4$ ，一个直角三角形，斜边为 $\sqrt{d^2_4 + a^2_4}$ ，邻边为 $d_4$ ，对边为 $a_4$ ，而这个三角形在轴3处的顶角角度为 $\theta_{offset3}$ ，这个角度是不变的，由于初始时 $\theta_3$ 为0，而实际上轴4原点与轴3原点的连线与轴2的夹角为 $\theta_{\angle234} = (\theta_{3})_0 + \frac{\pi}{2} - \theta_{offset3} = \pi - \theta_{offset3}$ ，而根据实际的几何关系，$\theta_{\angle234} = \theta_3 + \frac{\pi}{2} - \theta_{offset3}$ ，从而得到： $\theta_3 = \theta_{\angle234} + \theta_{offset3} - \frac{\pi}{2}$ 。
