@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+	<meta charset="UTF-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<title>六轴机械臂实时仿真</title>
+	<link rel="stylesheet" href="style.css" />
+	<!-- 用 importmap 把裸模块名 'three' 指向本地文件，这样无需打包工具 -->
+	<script type="importmap">
+		{
+			"imports": {
+				"three": "./vendor/three.module.js",
+				"three/addons/controls/OrbitControls.js": "./vendor/OrbitControls.js"
+			}
+		}
+	</script>
+</head>
+
+<body>
+	<div id="app">
+		<!-- 左侧控制面板 -->
+		<aside id="panel">
+			<header class="panel-header">
+				<h1>六轴机械臂实时仿真</h1>
+				<div id="connection" class="conn conn--off">连接中…</div>
+			</header>
+
+			<div class="panel-body">
+				<section class="group">
+					<h2>1. 目标位置（mm）</h2>
+					<div class="hint" id="manualArmHint">当前手动操作：—</div>
+					<div class="row row--input">
+						<label for="targetX">X</label>
+						<input type="number" id="targetX" step="1" value="400" />
+						<label for="targetY">Y</label>
+						<input type="number" id="targetY" step="1" value="400" />
+						<label for="targetZ">Z</label>
+						<input type="number" id="targetZ" step="1" value="400" />
+					</div>
+					<div class="row row--buttons">
+						<button id="applyPosition" class="primary">应用坐标</button>
+						<button id="pickFromTarget">读取当前目标</button>
+					</div>
+				</section>
+
+				<section class="group">
+					<h2>2. 末端姿态（目标坐标系的 Z 轴方向）</h2>
+					<div class="row">
+						<label for="zAxisX">Z 轴 X</label>
+						<input type="range" id="zAxisX" min="-1" max="1" step="0.005" value="0" />
+						<output id="zAxisXOut">0.000</output>
+					</div>
+					<div class="row">
+						<label for="zAxisY">Z 轴 Y</label>
+						<input type="range" id="zAxisY" min="-1" max="1" step="0.005" value="0" />
+						<output id="zAxisYOut">0.000</output>
+					</div>
+				</section>
+
+				<section class="group">
+					<h2>3. 位置微调（mm）</h2>
+					<div class="hint">按住滑块拖动，松手后归零，可持续微调</div>
+					<div class="row">
+						<label for="nudgeX">X 增量</label>
+						<input type="range" id="nudgeX" min="-120" max="120" step="1" value="0" />
+						<output id="nudgeXOut">0</output>
+					</div>
+					<div class="row">
+						<label for="nudgeY">Y 增量</label>
+						<input type="range" id="nudgeY" min="-120" max="120" step="1" value="0" />
+						<output id="nudgeYOut">0</output>
+					</div>
+					<div class="row">
+						<label for="nudgeZ">Z 增量</label>
+						<input type="range" id="nudgeZ" min="-120" max="120" step="1" value="0" />
+						<output id="nudgeZOut">0</output>
+					</div>
+				</section>
+
+				<section class="group">
+					<h2>4. 操作</h2>
+					<div class="row row--buttons">
+						<button id="loadObb" class="primary">载入点云包围盒目标</button>
+						<button id="randomObb">随机点云目标</button>
+					</div>
+					<div class="row row--buttons">
+						<button id="goHome">回到零位</button>
+						<button id="toggleTarget">隐藏目标</button>
+					</div>
+					<div class="row row--buttons">
+						<button id="toggleCloud">显示/隐藏点云</button>
+						<button id="toggleTrajectory">显示/隐藏轨迹</button>
+					</div>
+					<div class="row row--buttons">
+						<button id="focusView">重置视角</button>
+						<button id="toggleAxes">坐标轴显示</button>
+					</div>
+					<div class="row">
+						<label for="trackSize">轨迹采样点</label>
+						<input type="range" id="trackSize" min="4" max="200" step="2" value="24" />
+						<output id="trackSizeOut">24</output>
+					</div>
+					<div class="hint">点数越多，旧特解臂按 getTrack 逐点执行的动作越连续（最多 200）</div>
+					<div class="row row--checks">
+						<label><input type="checkbox" id="legacyIK" /> 使用旧逆解（单分支特解）</label>
+					</div>
+					<div class="hint" id="ikModeHint">当前：完备解析解（最多 8 组，按参考构型就近选解）</div>
+				</section>
+
+				<section class="group">
+					<h2>5. 传送带取件场景</h2>
+					<div class="hint">随机纸箱由传送带送来，机械臂抓取后在收集台码垛；手动操作会自动暂停场景</div>
+					<div class="row row--buttons">
+						<button id="startScenario" class="primary">启动场景</button>
+						<button id="pauseScenario">暂停</button>
+					</div>
+					<div class="row row--buttons">
+						<button id="resetScenario">复位并清空</button>
+					</div>
+					<div class="row">
+						<label for="beltSpeed">传送带速度</label>
+						<input type="range" id="beltSpeed" min="60" max="420" step="10" value="160" />
+						<output id="beltSpeedOut">160</output>
+					</div>
+					<div class="row">
+						<label for="spawnInterval">生成间隔</label>
+						<input type="range" id="spawnInterval" min="1" max="8" step="0.5" value="3" />
+						<output id="spawnIntervalOut">3.0 s</output>
+					</div>
+					<div class="row">
+						<label for="robotSpeed">臂速（全部）</label>
+						<input type="range" id="robotSpeed" min="20" max="300" step="10" value="100" />
+						<output id="robotSpeedOut">100%</output>
+					</div>
+					<div class="row">
+						<label for="trackSize5">轨迹点（全部）</label>
+						<input type="range" id="trackSize5" min="4" max="200" step="2" value="24" />
+						<output id="trackSize5Out">24</output>
+					</div>
+					<div class="row row--checks">
+						<label><input type="checkbox" id="autoClear" checked /> 托盘满后自动清空</label>
+					</div>
+					<div class="row row--checks">
+						<label><input type="checkbox" id="dynamicPick" /> 抓取移动中的货物（不停机，预测 + 跟踪）</label>
+					</div>
+					<div class="scenario-stats" id="scenarioStats">已抓取 0 · 已码放 0/8 · 带上 0</div>
+					<div class="scenario-message" id="scenarioMessage">未启动</div>
+					<div class="arm-compare" id="armCompare"></div>
+				</section>
+
+				<section class="group">
+					<h2>6. 机械臂管理</h2>
+					<div class="hint">
+						机械臂是独立实体：每台臂的逆解、速度、轨迹点数、基座位置都可以单独设置，
+						点「操作此臂」后第 1~4 节的操作就作用于它。
+						新臂要摆在离取件线 (600, 0) 约 800mm 以内才够得着，横向位置决定它负责哪一段带面
+					</div>
+					<div class="row row--buttons">
+						<label for="newArmX">新增 X</label>
+						<input type="number" id="newArmX" class="num" value="300" step="50" />
+						<label for="newArmY">Y</label>
+						<input type="number" id="newArmY" class="num" value="-600" step="50" />
+					</div>
+					<div class="row row--buttons">
+						<button id="addArm">添加机械臂</button>
+						<button id="resetArms">恢复默认两台</button>
+					</div>
+					<div class="arm-list" id="armList"></div>
+				</section>
+
+				<section class="group">
+					<h2>7. 关节角微调（度）</h2>
+					<div class="hint">直接拖动关节滑块会按正运动学更新末端位姿</div>
+					<div id="jointSliders"></div>
+					<div class="row row--buttons">
+						<button id="replayTrajectory">回放当前轨迹</button>
+					</div>
+				</section>
+
+				<section class="group">
+					<h2>8. 显示选项</h2>
+					<div class="row row--checks">
+						<label><input type="checkbox" id="showTool" checked /> 工具坐标系</label>
+						<label><input type="checkbox" id="showTarget" checked /> 目标坐标系</label>
+						<label><input type="checkbox" id="showGrid" checked /> 地面网格</label>
+						<label><input type="checkbox" id="showCloudPoints" checked /> 点云</label>
+						<label><input type="checkbox" id="showObb" checked /> 包围盒</label>
+					</div>
+				</section>
+			</div>
+
+			<footer id="status" class="panel-footer">等待后端连接…</footer>
+		</aside>
+
+		<!-- 三维视图 -->
+		<main id="viewport">
+			<div id="overlay" class="overlay">
+				<div class="overlay-title">机械臂状态</div>
+				<table>
+					<tbody>
+						<tr>
+							<th>末端位置</th>
+							<td id="tcpPos">-</td>
+						</tr>
+						<tr>
+							<th>目标位置</th>
+							<td id="targetPos">-</td>
+						</tr>
+						<tr>
+							<th>位置误差</th>
+							<td id="tcpError">-</td>
+						</tr>
+						<tr>
+							<th>关节角</th>
+							<td id="jointDegrees">-</td>
+						</tr>
+					</tbody>
+				</table>
+				<div class="overlay-note">鼠标左键旋转 · 右键平移 · 滚轮缩放</div>
+			</div>
+			<!-- 应用主体：模块加载成功后会移除本提示 -->
+			<div id="loading" class="loading" data-app-block>正在加载 Three.js …</div>
+		</main>
+	</div>
+
+	<!--
+		失败提示块：正常情况下会被 app.js 立即移除。
+		它存在的意义是——当 ES 模块根本无法加载时（最典型的是用 file:// 直接打开本文件，
+		浏览器会以 CORS 策略拒绝加载 type="module" 脚本），
+		页面不会只剩「正在加载…」，而是直接告诉用户该怎么办。
+	-->
+	<div id="bootError" class="loading boot-error" data-app-block hidden>
+		<div class="boot-error-card">
+			<h2>前端无法启动</h2>
+			<p>浏览器拒绝以这种方式加载页面脚本。最常见的原因是<strong>直接双击打开了
+				<code>web\index.html</code></strong>（即 <code>file://</code> 协议），
+				此时 ES 模块会被 CORS 策略拦截。</p>
+			<p>正确做法是由后端托管页面后访问它：</p>
+			<ol>
+				<li>启动后端：<code>RobotServer.exe --port 8760 --web web</code></li>
+				<li>浏览器访问：<code>http://127.0.0.1:8760/</code></li>
+			</ol>
+			<p class="boot-error-detail" id="bootErrorDetail"></p>
+		</div>
+	</div>
+
+	<script>
+		// 模块脚本一旦执行成功就会移除所有提示块；
+		// 若 1.5 秒后提示块仍在，说明模块没跑起来，于是显示排查指引。
+		window.__robotAppBooted = false;
+		setTimeout(function () {
+			if (window.__robotAppBooted) {
+				return;
+			}
+			var errorBox = document.getElementById('bootError');
+			var detail = document.getElementById('bootErrorDetail');
+			if (detail) {
+				detail.textContent = '当前地址：' + location.href +
+					(location.protocol === 'file:'
+						? '（检测到 file:// 协议，请改用 http:// 访问）'
+						: '（请检查后端是否在运行、控制台是否有报错）');
+			}
+			if (errorBox) {
+				errorBox.hidden = false;
+			}
+		}, 1500);
+	</script>
+	<script type="module" src="app.js"></script>
+</body>
+
+</html>

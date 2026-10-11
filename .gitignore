@@ -1,6 +1,29 @@
+# ---- Visual Studio ----
 /x64
+# 直接用 MSBuild 编译单个 vcxproj 时会生成 <项目名>\x64\ 中间目录
+/六轴机械臂仿真/
+/web-sim/RobotServer/
 *.sln
 *.vcxproj
 *.filters
 *.user
 /.vs
+*.opensdf
+*.sdf
+*.suo
+
+# ---- web-sim 子项目的依赖与产物 ----
+/web-sim/x64/
+/web-sim/web/node_modules/
+/web-sim/web/package-lock.json
+/web-sim/desktop/node_modules/
+/web-sim/desktop/package-lock.json
+/web-sim/tools/e2e/node_modules/
+/web-sim/tools/e2e/package-lock.json
+/web-sim/tools/e2e/shots/
+
+# ---- 运行时产物 ----
+*.png
+!imgs/*.png
+!web-sim/imgs/*.png
+*.log

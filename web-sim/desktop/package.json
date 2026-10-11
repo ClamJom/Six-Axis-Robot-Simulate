@@ -1,0 +1,15 @@
+{
+  "name": "robot-arm-simulator-desktop",
+  "version": "1.0.0",
+  "private": true,
+  "description": "六轴机械臂实时仿真 - Electron 桌面端外壳",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron . --no-sandbox",
+    "frontend": "electron . --no-sandbox --no-backend",
+    "dev": "electron . --no-sandbox --enable-logging"
+  },
+  "devDependencies": {
+    "electron": "^33.2.0"
+  }
+}
